@@ -28,10 +28,7 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-db_url = os.environ.get("DATABASE_URL")
-
-if not db_url:
-    raise Exception("DATABASE_URL not set")
+db_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://")
@@ -394,10 +391,10 @@ def add_header(response):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        #Insert if database empty
         if Product.query.count() == 0:
-            #reading CSV file
-            data = pd.read_csv('products.csv')
+            import os
+            path = os.path.join(os.path.dirname(__file__), 'products.csv')
+            data = pd.read_csv(path)
 
             for index, row in data.iterrows():
                 product = Product(
