@@ -1,5 +1,5 @@
-import os
-from flask import Flask, render_template, request, redirect, session, request
+import os, re
+from flask import Flask, render_template, request, redirect, session, request, flash
 from models import db, Product, User, Order, CartItem, WishlistItem
 import pandas as pd
 
@@ -98,8 +98,26 @@ def register():
                 'register.html',
                 error = error
             )
+        password = request.form['password']
+
+        # Password validation rules
+        if len(password) < 8:
+            error = "Password must be at least 8 characters long"
+            return render_template('register.html', error=error)
+
+        if not re.search(r"[A-Z]", password):
+            error = "Password must contain at least one uppercase letter"
+            return render_template('register.html', error=error)
+
+        if not re.search(r"[0-9]", password):
+            error = "Password must contain at least one number"
+            return render_template('register.html', error=error)
+
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            error = "Password must contain at least one special character"
+            return render_template('register.html', error=error)
         #create new user
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
         user = User(
             username=username,
             email=email,
@@ -138,7 +156,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-
+    flash("You have been logged out successfully")
     return redirect('/login')
 
 @app.route('/product/<int:product_id>')
