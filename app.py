@@ -17,7 +17,7 @@ from flask_login import(
 )
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-123')
 
 
 login_manager = LoginManager()
