@@ -39,6 +39,23 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 os.makedirs("/tmp", exist_ok=True)
 db.init_app(app)
 
+def seed_db():
+    db.create_all()
+    if Product.query.count() == 0:
+        path = os.path.join(os.path.dirname(__file__), 'products.csv')
+        data = pd.read_csv(path)
+        for index, row in data.iterrows():
+            product = Product(
+                name=row['name'],
+                price=row['price'],
+                image=row['image']
+            )
+            db.session.add(product)
+        db.session.commit()
+
+with app.app_context():
+    seed_db()
+
 @app.context_processor
 def cart_count():
     if current_user.is_authenticated:
@@ -389,6 +406,7 @@ def add_header(response):
     return response
 
 if __name__ == '__main__':
+    app.run(debug=True)
     with app.app_context():
         db.create_all()
         if Product.query.count() == 0:
@@ -405,7 +423,6 @@ if __name__ == '__main__':
                 db.session.add(product)
             db.session.commit()
 
-    app.run(debug=True)
 
 
 
